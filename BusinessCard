@@ -1,0 +1,497 @@
+import 'dart:async';
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:http/http.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:custom_navigation_bar/custom_navigation_bar.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+
+  late StreamSubscription subscription;
+
+  Future<void> checkConnectivity()async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile) {
+      setState(() {
+        status:
+        'Connected to Mobile';
+          });
+      // I am connected to a mobile network.
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      setState(() {
+        status:
+        'Wifi Network';
+        // I am connected to a wifi network.
+      }
+      );
+    }
+  }
+  void initState() {
+    super.initState();
+    checkConnectivity();
+    subscription = Connectivity().onConnectivityChanged.listen((result) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Connectivity changed to '+ result.name),
+          ),
+      );
+      setState(() {
+        status: result.name;
+      });
+    });
+  }
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          title: Text(
+            'Team Kraken',
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+          children: <Widget>[
+            Card(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.all(10),
+                    height: 280,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                    ),
+                  ),
+                  Positioned(
+                    top: 40,
+                    right: 20,
+                    bottom: 40,
+                    child: Container(
+                      height: 150,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(0),
+                        image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: AssetImage('images/myphoto.png'),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 150,
+                    child: Container(
+                      height: 300,
+                      width: 230,
+                      child: Column(
+                        children: [
+                          ElevatedButton(
+                            child: const Text(
+                              'Kıvanç Demirkıran',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Pacifico',
+                                  fontSize: 22,
+                                  color: Colors.black),
+                            ),
+                            onPressed: () async {
+                              await Share.share('Kıvanç Demirkıran');
+                            },
+                          ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            child: const Text(
+                              'Flutter Developer',
+                              style: TextStyle(
+                                  fontFamily: 'Noto Sans Mono',
+                                  fontSize: 17,
+                                  color: Colors.black),
+                            ),
+                            onPressed: () async {
+                              await Share.share('Flutter Developer');
+                            },
+                          ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final toCall = '+1 234 567 890';
+                              final body = 'Hello everyone!';
+                              final Uri call = Uri(
+                                  scheme: 'sms',
+                                  path: toCall,
+                                  query: '&body=' + Uri.encodeComponent(body));
+                              if (await canLaunchUrl(call)) {
+                                await launchUrl(call);
+                              } else {
+                                debugPrint('error');
+                              }
+                            },
+                            child: Text(
+                              '+1 234 567 890',
+                              style: TextStyle(
+                                  fontSize: 17, fontFamily: 'Bungee Spice'),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final toEmail = 'mauro.icardi@gmail.com';
+                              final subject = 'Negotiation';
+                              final body = 'Hey Mauro, COME TO GALA';
+                              final Uri email = Uri(
+                                  scheme: 'mailto',
+                                  path: toEmail,
+                                  query: '&subject=' +
+                                      Uri.encodeComponent(subject) +
+                                      '&body=' +
+                                      Uri.encodeComponent(body));
+                              if (await canLaunchUrl(email)) {
+                                await launchUrl(email);
+                              } else {
+                                debugPrint('error');
+                              }
+                            },
+                            child: Text(
+                              'kivanc.demirkiran@gmail.com',
+                              style: TextStyle(
+                                  fontFamily: 'Ubuntu',
+                                  fontSize: 12,
+                                  color: Colors.black),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            child: Row(
+                              children: <Widget>[
+                                SizedBox(width: 10),
+                                ElevatedButton(
+                                  child: Icon(FontAwesomeIcons.instagram,
+                                      size: 30, color: Colors.black),
+                                  onPressed: () async {
+                                    const url =
+                                        "https://instagram.com/instagram?igshid=YmMyMTA2M2Y=";
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      // can't launch url
+                                    }
+                                  },
+                                ),
+                                SizedBox(width: 5),
+                                ElevatedButton(
+                                  child: Icon(FontAwesomeIcons.medium,
+                                      size: 30, color: Colors.black),
+                                  onPressed: () async {
+                                    const url = "https://www.medium.com";
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      // can't launch url
+                                    }
+                                  },
+                                ),
+                                SizedBox(width: 5),
+                                ElevatedButton(
+                                  child: Icon(FontAwesomeIcons.linkedinIn,
+                                      size: 30, color: Colors.black),
+                                  onPressed: () async {
+                                    const url = "https://tr.linkedin.com";
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      // can't launch url
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 30),
+            Card(
+              elevation: 10,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Stack(
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.all(10),
+                    height: 280,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                    ),
+                  ),
+                  Positioned(
+                    top: 40,
+                    right: 20,
+                    bottom: 40,
+                    child: Container(
+                      height: 150,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(0),
+                        image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: NetworkImage(
+                              'https://upload.wikimedia.org/wikipedia/commons/1/18/Mark_Zuckerberg_F8_2019_Keynote_%2832830578717%29_%28cropped%29.jpg'),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 150,
+                    child: Container(
+                      height: 300,
+                      width: 230,
+                      child: Column(
+                        children: [
+                          ElevatedButton(
+                            child: const Text(
+                              'Mark Zuckerberg',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Pacifico',
+                                  fontSize: 22,
+                                  color: Colors.black),
+                            ),
+                            onPressed: () async {
+                              await Share.share('Mark Zuckerberg');
+                            },
+                          ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            child: const Text(
+                              'Junior Flutter Developer',
+                              style: TextStyle(
+                                  fontFamily: 'Noto Sans Mono',
+                                  fontSize: 12,
+                                  color: Colors.black),
+                            ),
+                            onPressed: () async {
+                              await Share.share('Junior Flutter Developer');
+                            },
+                          ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final toSend = '+1 234 567 890';
+                              final body = 'Hello everyone!';
+                              final Uri send = Uri(
+                                  scheme: 'sms',
+                                  path: toSend,
+                                  query: '&body=' + Uri.encodeComponent(body));
+                              if (await canLaunchUrl(send)) {
+                                await launchUrl(send);
+                              } else {
+                                debugPrint('error');
+                              }
+                            },
+                            child: Text(
+                              '+1 234 567 890',
+                              style: TextStyle(
+                                  fontSize: 17, fontFamily: 'Bungee Spice'),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final toEmail = 'tim.cook@gmail.com';
+                              final subject = 'Request';
+                              final body =
+                                  'Hey Tim, I need discount for Iphone 14!';
+                              final Uri email = Uri(
+                                  scheme: 'mailto',
+                                  path: toEmail,
+                                  query: '&subject=' +
+                                      Uri.encodeComponent(subject) +
+                                      '&body=' +
+                                      Uri.encodeComponent(body));
+                              if (await canLaunchUrl(email)) {
+                                await launchUrl(email);
+                              } else {
+                                debugPrint('error');
+                              }
+                            },
+                            child: Text(
+                              'mark.zuckerberg@gmail.com',
+                              style: TextStyle(
+                                  fontFamily: 'Ubuntu',
+                                  fontSize: 12,
+                                  color: Colors.black),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            child: Row(
+                              children: <Widget>[
+                                SizedBox(width: 10),
+                                ElevatedButton(
+                                  child: Icon(FontAwesomeIcons.instagram,
+                                      size: 30, color: Colors.black),
+                                  onPressed: () async {
+                                    const url =
+                                        "https://instagram.com/zuck?igshid=YmMyMTA2M2Y=";
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      // can't launch url
+                                    }
+                                  },
+                                ),
+                                SizedBox(width: 5),
+                                ElevatedButton(
+                                  child: Icon(FontAwesomeIcons.medium,
+                                      size: 30, color: Colors.black),
+                                  onPressed: () async {
+                                    const url = "https://www.medium.com";
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      // can't launch url
+                                    }
+                                  },
+                                ),
+                                SizedBox(width: 5),
+                                ElevatedButton(
+                                  child: Icon(FontAwesomeIcons.linkedinIn,
+                                      size: 30, color: Colors.black),
+                                  onPressed: () async {
+                                    const url =
+                                        "https://www.linkedin.com/in/mark-zuckerberg-618bba58";
+                                    if (await canLaunch(url)) {
+                                      await launch(url);
+                                    } else {
+                                      // can't launch url
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 50),
+            Positioned(
+              top: 250,
+              child: CustomNavigationBar(
+                items: [
+                  CustomNavigationBarItem(
+                    icon: Icon(Icons.account_circle),
+                    title: Text('Kraken')
+                  ),
+                  CustomNavigationBarItem(
+                      icon: Icon(Icons.notifications),
+                      title: Text('Packages')
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      ),
+    );
+  }
+}
+
+
+
+// HERE IS THE PUBSPEC.YAML PART
+
+name: homeworkkk
+description: A new Flutter project.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.17.6 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  url_launcher: ^6.1.5
+  font_awesome_flutter: ^10.2.1
+  connectivity_plus: ^2.3.7
+  share_plus: ^4.4.0
+  package_info_plus: ^1.4.3+1
+  device_info_plus: ^4.1.2
+  http: ^0.13.5
+  path_provider: ^2.0.11
+  custom_navigation_bar: ^0.8.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^2.0.0
+
+flutter:
+
+  uses-material-design: true
+
+  assets:
+    - images/myphoto.png
+
+  fonts:
+  - family: Pacifico
+    fonts:
+    - asset: fonts/Pacifico-Regular.ttf
+
+  - family: Noto Sans Mono
+    fonts:
+    - asset: fonts/NotoSansMono-VariableFont_wdth,wght.ttf
+
+  - family: Bungee Spice
+    fonts:
+    - asset: fonts/BungeeSpice-Regular.ttf
+
+  - family: Ubuntu
+    fonts:
+    - asset: fonts/Ubuntu-Italic.ttf
