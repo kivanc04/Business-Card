@@ -1,3 +1,13 @@
+This is the app of my project. 
+In this project, the packages of url_launcher, font_awesome_flutter, connectivity_plus, share_plus, package_info_plus,
+device_info_plus are used. This app has two cards by having card method and they have informations about the person. 
+For example, in a card there are icons that have name, job, phone number, mail address, and social media addresses. 
+When you click to the name or job, it shares them as a text to someone. When you click to phone, it directly calls the number you give. 
+If you click to the mail address, it directly mails to someone. Also, if you click to the icons of the social media, 
+it directly takes you to that website. These are the eligibilities that these cards do. Also, this app is scrollable, 
+and it gives you the chance of checking the WIFI connection.
+
+
 import 'dart:async';
 import 'dart:developer';
 
